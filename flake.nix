@@ -14,6 +14,7 @@
             pkgs.gh            # GitHub CLI: releases (the AI model)
           ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
             pkgs.podman        # container image: ./container.sh (docs/CONTAINER.md)
+            pkgs.actionlint    # checks .github/workflows/*.yml
           ];
         };
       });

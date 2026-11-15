@@ -13,6 +13,7 @@ import base64
 import gzip
 import json
 import random
+import os
 import subprocess
 import time
 import zlib
@@ -27,6 +28,8 @@ SIMPLE = (int, float, bool, str, type(None))
 
 
 def code_version():
+    if os.environ.get("TANK_ARENA_CODE"):              # set in the container image (no git there)
+        return os.environ["TANK_ARENA_CODE"]
     try:
         return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True,
                               timeout=5).stdout.strip() or "?"

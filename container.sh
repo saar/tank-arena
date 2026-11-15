@@ -2,7 +2,9 @@
 # Build and run Tank Arena in a container (Podman or Docker) on Linux.
 # Guide: docs/CONTAINER.md
 #
-#   ./container.sh build              make the image (with the AI partner)
+#   ./container.sh pull [TAG]         get the ready image from ghcr.io (TAG: latest, 0.2.0,
+#                                     latest-noai, ...)
+#   ./container.sh build              make the image yourself (with the AI partner)
 #   ./container.sh build --no-ai      make a small image without the AI
 #   ./container.sh play [options]     play in a window, with sound
 #   ./container.sh train --run ml/runs/my-ai --hours 1
@@ -43,8 +45,19 @@ if [[ "$cmd" == build ]]; then
         shift
         args=(--build-arg WITH_AI=0 --build-arg MODEL_URL=)
     fi
+    commit="$(git -C "$here" rev-parse --short HEAD 2>/dev/null || true)"
+    [[ -n "$commit" ]] && args+=(--build-arg "GIT_COMMIT=$commit")
     echo "Building image '$image' with $engine ..."
     exec "$engine" build -t "$image" "${args[@]}" "$@" "$here"
+fi
+
+# ---- pull: get the ready image from the GitHub package registry ------------
+if [[ "$cmd" == pull ]]; then
+    tag="${1:-latest}"
+    remote="ghcr.io/saar/tank-arena:$tag"
+    echo "Getting $remote with $engine ..."
+    "$engine" pull "$remote"
+    exec "$engine" tag "$remote" "$image"
 fi
 
 # ---- run -------------------------------------------------------------------

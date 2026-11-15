@@ -4,6 +4,7 @@
 # Build options (--build-arg NAME=VALUE):
 #   WITH_AI=1      1: add PyTorch (AI partner, training). 0: game only, much smaller image.
 #   MODEL_URL=...  the AI model put into the image. Empty: no model in the image.
+#   GIT_COMMIT=... the code version, saved in recordings (container.sh and the CI set it).
 
 # Full name (with the registry), so Podman does not ask which registry to use.
 FROM docker.io/library/python:3.12-slim-trixie
@@ -46,7 +47,9 @@ RUN rm -rf /app/recordings /app/ml/runs \
 
 # LIBGL_ALWAYS_SOFTWARE: the game is 2D. Without it, Mesa looks for the GPU (not in the
 # container) and the window does not open.
+ARG GIT_COMMIT=
 ENV TANK_ARENA_HOME=/data \
+    TANK_ARENA_CODE=${GIT_COMMIT} \
     LIBGL_ALWAYS_SOFTWARE=1 \
     HOME=/tmp \
     PYTHONDONTWRITEBYTECODE=1 \

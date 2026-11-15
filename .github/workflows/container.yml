@@ -1,0 +1,70 @@
+# Build the container image and publish it to the GitHub package registry (ghcr.io).
+# Runs for each version tag (v1.2.3) and by hand (Actions tab > Container image > Run workflow).
+# Guide: docs/CONTAINER.md
+#
+# Images:
+#   ghcr.io/<owner>/tank-arena:latest, :1.2.3, :1.2, :sha-abc1234        with the AI partner
+#   ghcr.io/<owner>/tank-arena:latest-noai, :1.2.3-noai, ...            game only (small)
+name: Container image
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write        # push to ghcr.io with the built-in token
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - variant: ai
+            with_ai: "1"
+            suffix: ""
+          - variant: noai
+            with_ai: "0"
+            suffix: "-noai"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: short
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Tags and labels (the source label links the package to this repository).
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/tank-arena
+          flavor: |
+            latest=false
+            suffix=${{ matrix.suffix }},onlatest=true
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+            type=sha,prefix=sha-
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            WITH_AI=${{ matrix.with_ai }}
+            GIT_COMMIT=${{ steps.short.outputs.sha }}
+            ${{ matrix.with_ai == '0' && 'MODEL_URL=' || '' }}
+          cache-from: type=gha,scope=${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}
