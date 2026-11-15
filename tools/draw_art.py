@@ -814,49 +814,53 @@ def font_sheet():
     return cv
 
 
+RESERVE_COLOR = "#e2503c"          # the enemies-left bar color (hud.py)
+
+
 def reserve_icon():
-    return Canvas.from_rows({"k": "#202020", "g": "#7a7a7a"}, [
-        "gggggggg",
-        "gggkkggg",
-        "gkgkkgkg",
-        "gkkkkkkg",
-        "gkkggkkg",
-        "gkkkkkkg",
-        "gkgggg kg".replace(" ", "")[:8],
-        "gggggggg"])
+    # transparent background: the icons sit on the panel color (hud.BG)
+    return Canvas.from_rows({"k": RESERVE_COLOR}, [
+        "........",
+        "...kk...",
+        ".k.kk.k.",
+        ".kkkkkk.",
+        ".kk..kk.",
+        ".kkkkkk.",
+        ".k....k.",
+        "........"])
 
 
 def lives_icon():
-    return Canvas.from_rows({"k": "#202020", "g": "#7a7a7a", "r": "#c83a2a"}, [
-        "gggggggg",
-        "grrgrrgg",
-        "rrrrrrrg",
-        "rrrrrrrg",
-        "grrrrrgg",
-        "ggrrrggg",
-        "gggrgggg",
-        "gggggggg"])
+    return Canvas.from_rows({"r": "#c83a2a"}, [
+        "........",
+        ".rr.rr..",
+        "rrrrrrr.",
+        "rrrrrrr.",
+        ".rrrrr..",
+        "..rrr...",
+        "...r....",
+        "........"])
 
 
 def stage_flag():
-    pal = {"g": "#7a7a7a", "p": "#202020", "f": "#e8b030", "d": "#a87010"}
+    pal = {"p": "#b0b4c0", "f": "#e8b030", "d": "#a87010"}
     return Canvas.from_rows(pal, [
-        "gggggggggggggggg",
-        "gggpgggggggggggg",
-        "gggpffffffffgggg",
-        "gggpfffffffffggg",
-        "gggpffffdfffffgg",
-        "gggpfffddffffggg",
-        "gggpffffffffgggg",
-        "gggpfffffffggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "ggpppggggggggggg",
-        "gpppppgggggggggg",
-        "gggggggggggggggg"])
+        "................",
+        "...p............",
+        "...pffffffff....",
+        "...pfffffffff...",
+        "...pffffdfffff..",
+        "...pfffddffff...",
+        "...pffffffff....",
+        "...pfffffff.....",
+        "...p............",
+        "...p............",
+        "...p............",
+        "...p............",
+        "...p............",
+        "..ppp...........",
+        ".ppppp..........",
+        "................"])
 
 
 def cursor():
