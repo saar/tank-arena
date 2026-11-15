@@ -814,49 +814,32 @@ def font_sheet():
     return cv
 
 
+RESERVE_COLOR = "#e2503c"          # the enemies-left bar color (hud.py)
+
+
 def reserve_icon():
-    return Canvas.from_rows({"k": "#202020", "g": "#7a7a7a"}, [
-        "gggggggg",
-        "gggkkggg",
-        "gkgkkgkg",
-        "gkkkkkkg",
-        "gkkggkkg",
-        "gkkkkkkg",
-        "gkgggg kg".replace(" ", "")[:8],
-        "gggggggg"])
+    # transparent background: the icons sit on the panel color (hud.BG)
+    return Canvas.from_rows({"k": RESERVE_COLOR}, [
+        "........",
+        "...kk...",
+        ".k.kk.k.",
+        ".kkkkkk.",
+        ".kk..kk.",
+        ".kkkkkk.",
+        ".k....k.",
+        "........"])
 
 
 def lives_icon():
-    return Canvas.from_rows({"k": "#202020", "g": "#7a7a7a", "r": "#c83a2a"}, [
-        "gggggggg",
-        "grrgrrgg",
-        "rrrrrrrg",
-        "rrrrrrrg",
-        "grrrrrgg",
-        "ggrrrggg",
-        "gggrgggg",
-        "gggggggg"])
-
-
-def stage_flag():
-    pal = {"g": "#7a7a7a", "p": "#202020", "f": "#e8b030", "d": "#a87010"}
-    return Canvas.from_rows(pal, [
-        "gggggggggggggggg",
-        "gggpgggggggggggg",
-        "gggpffffffffgggg",
-        "gggpfffffffffggg",
-        "gggpffffdfffffgg",
-        "gggpfffddffffggg",
-        "gggpffffffffgggg",
-        "gggpfffffffggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "gggpgggggggggggg",
-        "ggpppggggggggggg",
-        "gpppppgggggggggg",
-        "gggggggggggggggg"])
+    return Canvas.from_rows({"r": "#c83a2a"}, [
+        "........",
+        ".rr.rr..",
+        "rrrrrrr.",
+        "rrrrrrr.",
+        ".rrrrr..",
+        "..rrr...",
+        "...r....",
+        "........"])
 
 
 def cursor():
@@ -914,7 +897,6 @@ def sprites():
     S["ui/font"] = font_sheet()
     S["ui/reserve_icon"] = reserve_icon()
     S["ui/lives_icon"] = lives_icon()
-    S["ui/stage_flag"] = stage_flag()
     S["ui/cursor"] = cursor()
     return S
 

@@ -94,7 +94,6 @@ def apply(assets, art_dir):
     A.hq_dead = L("base/hq_dead")
     A.reserve_icon = L("ui/reserve_icon")
     A.lives_icon = L("ui/lives_icon")
-    A.stage_flag = L("ui/stage_flag")
     sheet = L("ui/font")
     A.glyph_mask = {}
     for i, ch in enumerate(FONT_CHARS):
