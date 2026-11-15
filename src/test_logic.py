@@ -102,6 +102,7 @@ w = World(A, 1, num_players=2)
 p1, p2 = w.players
 assert (p1.x, p1.y) == PLAYER_SPAWNS[0] and (p2.x, p2.y) == PLAYER_SPAWNS[1]
 assert w.max_enemies == MAX_ENEMIES_2P
+w.cells = [[EMPTY] * GRID for _ in range(GRID)]       # open ground: do not depend on the stage 1 map
 p2.shield = 0
 p2.x, p2.y = 100.0, 100.0
 assert Bullet(w, p1, 108, 108, "up", 2, False, False).step_hit()
@@ -190,6 +191,7 @@ from game import Enemy  # noqa: E402
 w = empty_world()
 w.player_item(w.players[0], TURRET)
 e = Enemy(w, TURRET_POS[0], TURRET_POS[1] - 64, 0, False)
+e.fire = lambda *a: None                # its shell could cancel the turret shell (random)
 w.enemies.append(e)
 w.players[1].x, w.players[1].y = TURRET_POS[0] - 40.0, float(TURRET_POS[1])
 for _ in range(40):
