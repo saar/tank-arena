@@ -29,7 +29,7 @@ nix develop --command python3 src/main.py
 **In a container** (Linux; with Nix, or with Podman or Docker installed):
 
 ```sh
-./container.sh build      # one time
+./container.sh pull       # one time: the ready image (or ./container.sh build)
 ./container.sh play
 ```
 

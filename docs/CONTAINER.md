@@ -12,6 +12,7 @@ and benchmarks without a window work on all systems.
 - [Where your data goes](#where-your-data-goes)
 - [Your own maps and models](#your-own-maps-and-models)
 - [Settings](#settings)
+- [Ready images and new versions](#ready-images-and-new-versions)
 - [Without the script](#without-the-script)
 - [Problems](#problems)
 
@@ -26,8 +27,14 @@ You need **one** of these:
 Then, in the repository folder:
 
 ```sh
-./container.sh build      # one time; makes the image "tank-arena" (about 2 GB, a few minutes)
+./container.sh pull       # one time; gets the ready image (about 2 GB)
 ./container.sh play       # play in a window, with sound
+```
+
+Or make the image yourself from the code in your folder (a few minutes):
+
+```sh
+./container.sh build
 ```
 
 Keys and game options are the same as in the [README](../README.md#how-to-play). Close the
@@ -37,13 +44,14 @@ Podman runs without root. It needs user ID ranges for your user in `/etc/subuid`
 `/etc/subgid` (most Linux systems add them when they make a user; check with
 `grep $USER /etc/subuid`), and the `newuidmap` program (Debian/Ubuntu package `uidmap`).
 
-If you do not need the AI partner, make a smaller image (about 600 MB):
+If you do not need the AI partner, use the smaller image (about 600 MB):
 
 ```sh
-./container.sh build --no-ai
+./container.sh pull latest-noai      # or: ./container.sh build --no-ai
 ```
 
 After you change the code, run `./container.sh build` again. The code is copied into the image.
+`pull` and `build` both make the local image `tank-arena`; the last one wins.
 
 ## What you can do
 
@@ -145,13 +153,47 @@ TA_RUNS=/mnt/big/tank-runs ./container.sh train --run ml/runs/long --hours 8
 | `--no-ai` | No PyTorch and no AI model: a small image, the game only |
 | `--build-arg MODEL_URL=URL` | Put another model file into the image (empty: no model) |
 
+## Ready images and new versions
+
+The ready images are on the GitHub package registry: `ghcr.io/saar/tank-arena`.
+
+| Tag | What it is |
+|---|---|
+| `latest` | The newest version, with the AI partner |
+| `0.2.0`, `0.2` | One version, with the AI partner |
+| `latest-noai`, `0.2.0-noai` | The same without the AI (small) |
+| `sha-abc1234` | The image of one commit |
+
+`./container.sh pull TAG` gets one of them (default `latest`).
+
+**Publish a new version** (maintainers). GitHub Actions builds and publishes the images
+(`.github/workflows/container.yml`) when you push a version tag:
+
+```sh
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The build takes about 10 minutes; see the **Actions** tab. To build without a new tag: Actions,
+**Container image**, **Run workflow** (this gives the `latest` and `sha-...` tags).
+
+The first time only: GitHub makes a new package **private**. Open the package page
+(your GitHub profile, **Packages**, `tank-arena`, **Package settings**) and set
+**Change visibility** to **Public**. Otherwise other people cannot pull it.
+
+The image contains the AI model of the release in the Dockerfile (`MODEL_URL`). When you
+publish a new model, change `MODEL_URL` too.
+
+Recordings made in the container save the code version (the git commit of the image).
+
 ## Without the script
 
 The script only adds the right options to `podman run` or `docker run`. To see what it does,
 read `container.sh`; each part has a comment. The minimum:
 
 ```sh
-docker build -t tank-arena .
+docker pull ghcr.io/saar/tank-arena:latest && docker tag ghcr.io/saar/tank-arena:latest tank-arena
+# or make it yourself: docker build -t tank-arena .
 
 # Training or tests (no window)
 docker run --rm --init --user "$(id -u):$(id -g)" \
