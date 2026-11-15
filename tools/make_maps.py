@@ -253,7 +253,23 @@ def score(g, d):
     s -= sum(g[r][c] not in (E, IC, FO) for r, c in ROOMY) * 0.15
     if brick < 0.12:
         s -= 1
+    s -= fire_lane(g)
     return s
+
+
+SHOT_STOP = (0, 1, 2, 3, BR, 5, 6, 7, 8, ST)   # brick and steel stop shells; water, forest, ice do not
+
+
+def fire_lane(g):
+    """Penalty for an open shot line down the center column (6) to the base. An enemy that
+    comes out of the top-center spawn drives straight down this column and fires at the base."""
+    stops = sum(g[r][6] in SHOT_STOP for r in range(1, 11))
+    steel = sum(g[r][6] in (5, 6, 7, 8, ST) for r in range(1, 11))
+    if stops == 0:
+        return 3.0
+    if stops == 1 and not steel:
+        return 0.75
+    return 0.0
 
 
 def enemy_wave(stage, rng):
