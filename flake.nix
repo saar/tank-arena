@@ -12,6 +12,8 @@
           packages = [
             (pkgs.python3.withPackages (p: [ p.pygame-ce p.pillow p.numpy p.torch ]))
             pkgs.gh            # GitHub CLI: releases (the AI model)
+          ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+            pkgs.podman        # container image: ./container.sh (docs/CONTAINER.md)
           ];
         };
       });

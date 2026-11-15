@@ -9,7 +9,8 @@
 #   ./container.sh help               all commands
 #
 # Settings (environment variables, all optional):
-#   TA_ENGINE      podman or docker (default: podman if found, else docker)
+#   TA_ENGINE      podman or docker (default: podman; from `nix develop` if Nix is installed,
+#                  else the installed podman, else docker)
 #   TA_IMAGE       image name (default: tank-arena)
 #   TA_DATA        host folder for all saved data (default: ~/.local/share/tank-arena,
 #                  the same folder that the game uses without a container)
@@ -22,6 +23,10 @@
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
+# With Nix, run inside `nix develop`: it gives Podman (see flake.nix). Nothing to install.
+if [[ -z "${TA_ENGINE:-}" && -z "${IN_NIX_SHELL:-}" ]] && command -v nix >/dev/null 2>&1; then
+    exec nix develop "$here" --command "$here/container.sh" "$@"
+fi
 if [[ -n "${TA_ENGINE:-}" ]]; then engine="$TA_ENGINE"
 elif command -v podman >/dev/null 2>&1; then engine=podman
 else engine=docker; fi

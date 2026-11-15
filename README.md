@@ -26,7 +26,7 @@ cd tank-arena
 nix develop --command python3 src/main.py
 ```
 
-**With Docker or Podman** (Linux; nothing to install but the container tool):
+**In a container** (Linux; with Nix, or with Podman or Docker installed):
 
 ```sh
 ./container.sh build      # one time

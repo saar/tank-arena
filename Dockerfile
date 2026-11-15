@@ -5,7 +5,8 @@
 #   WITH_AI=1      1: add PyTorch (AI partner, training). 0: game only, much smaller image.
 #   MODEL_URL=...  the AI model put into the image. Empty: no model in the image.
 
-FROM python:3.12-slim-trixie
+# Full name (with the registry), so Podman does not ask which registry to use.
+FROM docker.io/library/python:3.12-slim-trixie
 
 ARG WITH_AI=1
 ARG MODEL_URL=https://github.com/saar/tank-arena/releases/download/v0.1.0/partner.pt

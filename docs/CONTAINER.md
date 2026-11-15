@@ -17,7 +17,13 @@ and benchmarks without a window work on all systems.
 
 ## Quick start
 
-You need Podman or Docker. Then, in the repository folder:
+You need **one** of these:
+
+- **Nix** (easiest): the script runs itself inside `nix develop`, which gives Podman.
+  Nothing else to install.
+- **Podman** or **Docker**, installed on your computer.
+
+Then, in the repository folder:
 
 ```sh
 ./container.sh build      # one time; makes the image "tank-arena" (about 2 GB, a few minutes)
@@ -26,6 +32,10 @@ You need Podman or Docker. Then, in the repository folder:
 
 Keys and game options are the same as in the [README](../README.md#how-to-play). Close the
 window, press Esc on the title screen, or press Ctrl+C in the terminal to stop.
+
+Podman runs without root. It needs user ID ranges for your user in `/etc/subuid` and
+`/etc/subgid` (most Linux systems add them when they make a user; check with
+`grep $USER /etc/subuid`), and the `newuidmap` program (Debian/Ubuntu package `uidmap`).
 
 If you do not need the AI partner, make a smaller image (about 600 MB):
 
@@ -118,7 +128,7 @@ Set these environment variables before the command, for example
 | `TA_RECORDINGS` | Another folder for recordings | `$TA_DATA/recordings` |
 | `TA_RUNS` | Another folder for training runs | `$TA_DATA/runs` |
 | `TA_GAMEPAD=1` | Use gamepads (see [Problems](#problems)) | off |
-| `TA_ENGINE` | `podman` or `docker` | `podman` if installed, else `docker` |
+| `TA_ENGINE` | `podman` or `docker`. When set, the script does not use `nix develop` | Podman from Nix if Nix is installed, else the installed `podman`, else `docker` |
 | `TA_IMAGE` | The image name | `tank-arena` |
 | `TA_WINDOW` | `1`: always open a window; `0`: never | window for `play`, `replay`, `shell` |
 
@@ -171,5 +181,8 @@ Any other first word runs as a program, for example `tank-arena python3 ml/bench
 | No sound | The script needs the PulseAudio or PipeWire socket (`$XDG_RUNTIME_DIR/pulse/native`). It tells you when it does not find it. Play with `--mute` to hide the message. |
 | The gamepad does not work | Start with `TA_GAMEPAD=1`. The gamepad must be connected **before** the start. This gives the container read access to all input devices of your computer (also the keyboard). |
 | `permission denied ... docker.sock` | Your user may not use Docker. Use Podman (no root needed), or ask the admin. Note: the `docker` group gives root access to the computer. |
+| Podman: `cannot find newuidmap` or `no subuid ranges found` | Install `uidmap` and add the ID ranges: `sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $USER`, then log in again. |
+| Podman: `Error: open /etc/containers/policy.json` | Make the file one time: `mkdir -p ~/.config/containers && echo '{"default":[{"type":"insecureAcceptAnything"}]}' > ~/.config/containers/policy.json` |
+| Docker and Podman have different images | Each tool keeps its own images. Build with the tool that you run with. |
 | Messages `MESA: error: Failed to query drm device` | Normal. The container draws without the GPU; the game is 2D and does not need it. |
 | `NO AI MODEL` on the title screen | The image was built with `--no-ai`, or the model file is missing. Build again without `--no-ai`. |
