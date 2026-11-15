@@ -24,6 +24,7 @@ import time
 
 import pygame
 
+WEB = sys.platform == "emscripten"      # the browser build (pygbag, tools/web_build.sh)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from assets import Assets  # noqa: E402
 from config import *       # noqa: E402,F403
@@ -123,6 +124,7 @@ class App:
         self.speed = 1                  # game frames per screen frame (fast watch)
         self.record_dir = None          # --record: save each game here
         self.rec = None                 # the Recorder of the running game
+        self.frames = 0                 # screen frames since start
 
     # ---- scenes -----------------------------------------------------------
     def set_mode(self, mode):
@@ -221,47 +223,58 @@ class App:
 
     # ---- loop -------------------------------------------------------------
     def run(self):
-        frames = 0
-        while True:
-            for ev in pygame.event.get():
-                if ev.type == pygame.QUIT:
-                    self.end_recording()
-                    return
-                self.pads.event(ev)
-                if ev.type == pygame.KEYDOWN:
-                    if ev.key == pygame.K_ESCAPE:
-                        if self.scene == "title":
-                            self.end_recording()
-                            return
-                        self.to_title()
-                    elif self.scene == "title":
-                        self.title_key(ev.key)
-                    elif ev.key in SPEED_KEYS:
-                        self.set_speed(self.speed * 2 if SPEED_KEYS[ev.key] > 0 else self.speed // 2)
-                    elif self.scene in ("play", "clear") and ev.key in CHEAT_KEYS:
-                        self.cheat(ev.key)
-                    elif self.scene in ("play", "clear") and ev.key == pygame.K_p:
-                        self.toggle_pause()
-            self.pads.poll()
-            self.pad_menu()
-            for _ in range(self.speed):             # fast mode: several game frames per screen frame
-                keys = self.input_keys()
-                if self.autoplay:
-                    keys = [keys[i] if self.ai_drives(i) else self.fake_keys(frames, i) for i in range(self.players)]
-                self.tick(keys)
-            if self.speed > 1:
-                self.assets.text_color(self.canvas, "X%d" % self.speed, 2, 214, (230, 230, 230))
-            pygame.transform.scale(self.canvas, self.screen.get_size(), self.screen)
-            pygame.display.flip()
-            frames += 1
-            if self.autoplay:
-                if frames == self.autoplay:
-                    if self.shot:
-                        pygame.image.save(self.canvas, self.shot)
-                    self.end_recording()
-                    return
-            else:
+        while self.frame():
+            if not self.autoplay:
                 self.clock.tick(FPS)
+
+    async def run_async(self):
+        """The same loop for the browser (pygbag): give control back after each frame."""
+        import asyncio
+        while self.frame():
+            self.clock.tick(FPS)
+            await asyncio.sleep(0)
+
+    def frame(self):
+        """One screen frame: input, game frames, draw. False: quit."""
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                self.end_recording()
+                return False
+            self.pads.event(ev)
+            if ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_ESCAPE:
+                    if self.scene == "title":
+                        if not WEB:             # the browser page cannot quit
+                            self.end_recording()
+                            return False
+                    else:
+                        self.to_title()
+                elif self.scene == "title":
+                    self.title_key(ev.key)
+                elif ev.key in SPEED_KEYS:
+                    self.set_speed(self.speed * 2 if SPEED_KEYS[ev.key] > 0 else self.speed // 2)
+                elif self.scene in ("play", "clear") and ev.key in CHEAT_KEYS:
+                    self.cheat(ev.key)
+                elif self.scene in ("play", "clear") and ev.key == pygame.K_p:
+                    self.toggle_pause()
+        self.pads.poll()
+        self.pad_menu()
+        for _ in range(self.speed):             # fast mode: several game frames per screen frame
+            keys = self.input_keys()
+            if self.autoplay:
+                keys = [keys[i] if self.ai_drives(i) else self.fake_keys(self.frames, i) for i in range(self.players)]
+            self.tick(keys)
+        if self.speed > 1:
+            self.assets.text_color(self.canvas, "X%d" % self.speed, 2, 214, (230, 230, 230))
+        pygame.transform.scale(self.canvas, self.screen.get_size(), self.screen)
+        pygame.display.flip()
+        self.frames += 1
+        if self.autoplay and self.frames == self.autoplay:
+            if self.shot:
+                pygame.image.save(self.canvas, self.shot)
+            self.end_recording()
+            return False
+        return True
 
     def set_speed(self, n):
         self.speed = max(1, min(32, n))

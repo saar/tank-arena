@@ -5,7 +5,13 @@ use the standard layout: D-pad or left stick move, A/B/X/Y or right trigger fire
 Start, Back (Select). Unknown pads use the raw joystick: hat or left stick, buttons 0-3
 fire, button 7, 9 or 11 Start, button 6, 8 or 10 Back.
 """
+import sys
+
 import pygame
+
+WEB = sys.platform == "emscripten"
+# Browser (Gamepad API "standard" layout): the D-pad is buttons 12-15, not a hat.
+WEB_BTN = dict(up=(12,), down=(13,), left=(14,), right=(15,), fire=(0, 1, 2, 3, 7), start=(9,), back=(8,))
 
 try:
     import pygame._sdl2.controller as _ctl
@@ -19,7 +25,7 @@ NAMES = ("up", "down", "left", "right", "fire", "start", "back")
 class Pad:
     def __init__(self, index):
         self.ctl = self.js = None
-        if _ctl and _ctl.is_controller(index):
+        if not WEB and _ctl and _ctl.is_controller(index):
             self.ctl = _ctl.Controller(index)
             self.name = self.ctl.name
         else:
@@ -58,6 +64,16 @@ class Pad:
         js = self.js
         nb = js.get_numbuttons()
         btn = lambda *ids: any(js.get_button(i) for i in ids if i < nb)  # noqa: E731
+        if WEB:
+            ax = js.get_axis(0) if js.get_numaxes() > 1 else 0
+            ay = js.get_axis(1) if js.get_numaxes() > 1 else 0
+            for k, ids in WEB_BTN.items():
+                out[k] = btn(*ids)
+            out["left"] |= ax < -DEAD
+            out["right"] |= ax > DEAD
+            out["up"] |= ay < -DEAD
+            out["down"] |= ay > DEAD
+            return out
         hx, hy = js.get_hat(0) if js.get_numhats() else (0, 0)
         ax = js.get_axis(0) if js.get_numaxes() > 1 else 0
         ay = js.get_axis(1) if js.get_numaxes() > 1 else 0
@@ -81,6 +97,9 @@ class Pads:
 
     def scan(self):
         self.list = [Pad(i) for i in range(pygame.joystick.get_count())]
+        for i, p in enumerate(self.list):
+            print("gamepad %d: %s (%s)" % (i + 1, p.name, "controller" if p.ctl else
+                  "%d buttons, %d axes, %d hats" % (p.js.get_numbuttons(), p.js.get_numaxes(), p.js.get_numhats())))
 
     def event(self, ev):
         if ev.type in (pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED):
