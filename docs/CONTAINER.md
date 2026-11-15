@@ -177,9 +177,9 @@ git push origin v0.2.0
 The build takes about 10 minutes; see the **Actions** tab. To build without a new tag: Actions,
 **Container image**, **Run workflow** (this gives the `latest` and `sha-...` tags).
 
-The first time only: GitHub makes a new package **private**. Open the package page
-(your GitHub profile, **Packages**, `tank-arena`, **Package settings**) and set
-**Change visibility** to **Public**. Otherwise other people cannot pull it.
+The package is linked to this public repository, so it is public too: anyone can pull it
+without a login. After a change of the repository or the workflow, check this one time on the
+package page (your GitHub profile, **Packages**, `tank-arena`): it must show **Public**.
 
 The image contains the AI model of the release in the Dockerfile (`MODEL_URL`). When you
 publish a new model, change `MODEL_URL` too.
@@ -188,17 +188,15 @@ Recordings made in the container save the code version (the git commit of the im
 
 ## Without the script
 
-The script only adds the right options to `podman run` or `docker run`. To see what it does,
-read `container.sh`; each part has a comment. The minimum:
+You do not need the script or a clone of the repo. The script only adds the right options to
+`podman run` or `docker run`; each part of `container.sh` has a comment. Docker and Podman get
+the image from ghcr.io by themselves at the first run.
 
 ```sh
-docker pull ghcr.io/saar/tank-arena:latest && docker tag ghcr.io/saar/tank-arena:latest tank-arena
-# or make it yourself: docker build -t tank-arena .
-
 # Training or tests (no window)
-docker run --rm --init --user "$(id -u):$(id -g)" \
+docker run --rm -it --init --user "$(id -u):$(id -g)" \
     -v ~/.local/share/tank-arena:/data \
-    tank-arena train --run ml/runs/my-ai --hours 1
+    ghcr.io/saar/tank-arena:latest train --run ml/runs/my-ai --hours 1
 
 # Play (X11 window and PulseAudio/PipeWire sound)
 docker run --rm -it --init --user "$(id -u):$(id -g)" \
@@ -206,13 +204,28 @@ docker run --rm -it --init --user "$(id -u):$(id -g)" \
     -e DISPLAY -e SDL_VIDEODRIVER=x11 -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
     -e XAUTHORITY=/tmp/.Xauthority -v "${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.Xauthority:ro" \
     -e PULSE_SERVER=unix:/run/pulse/native -v "$XDG_RUNTIME_DIR/pulse/native:/run/pulse/native" \
-    tank-arena play
+    ghcr.io/saar/tank-arena:latest play
+
+# Get a newer version of the image
+docker pull ghcr.io/saar/tank-arena:latest
 ```
 
 With Podman, write `podman` for `docker` and `--userns=keep-id` for `--user ...`.
 
+| Option | Why |
+|---|---|
+| `-v ~/.local/share/tank-arena:/data` | Keeps maps, models, recordings and training runs on your computer |
+| `--user ...` / `--userns=keep-id` | The files belong to you, not to root |
+| `--init`, `-it` | Ctrl+C in the terminal stops the game |
+| `DISPLAY`, `XAUTHORITY`, `/tmp/.X11-unix` | The window |
+| `PULSE_SERVER` and the `pulse/native` socket | Sound (leave out, and add `--mute` after `play`, for no sound) |
+| `:latest` / `:latest-noai` | With the AI partner / small image without it |
+
+To use an image that you built yourself (`docker build -t tank-arena .`), write `tank-arena`
+for `ghcr.io/saar/tank-arena:latest`.
+
 The first word after the image name is the command (see [What you can do](#what-you-can-do)).
-Any other first word runs as a program, for example `tank-arena python3 ml/benchmark.py --help`.
+Any other first word runs as a program, for example `ghcr.io/saar/tank-arena:latest python3 ml/benchmark.py --help`.
 
 ## Problems
 
