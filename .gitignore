@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+result
+result-*
+.vscode/
+.idea/
+*.swp
+.DS_Store
+# trained models: download from the GitHub release (see README)
+models/
+*.pt
+# training runs and game recordings
+ml/runs/
+recordings/
