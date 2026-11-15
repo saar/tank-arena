@@ -26,6 +26,15 @@ cd tank-arena
 nix develop --command python3 src/main.py
 ```
 
+**In a container** (Linux; with Nix, or with Podman or Docker installed):
+
+```sh
+./container.sh build      # one time
+./container.sh play
+```
+
+The image also has the AI partner and the training tools. Guide: [docs/CONTAINER.md](docs/CONTAINER.md).
+
 **Without Nix:** install Python 3.11 or newer, then:
 
 ```sh
@@ -175,7 +184,8 @@ The technical details are in [ml/README.md](ml/README.md).
 | `maps/default/` | The built-in map pack |
 | `ml/` | The AI partner: game environment, network, training, tests |
 | `tools/` | `draw_art.py` (draws the sprites), `make_maps.py` (makes map packs), `replay.py` and `compose.py` (recordings to animations) |
-| `docs/` | Guides: map packs, AI training |
+| `docs/` | Guides: map packs, AI training, container |
+| `container/`, `Dockerfile`, `container.sh` | The container image and its start script (see [docs/CONTAINER.md](docs/CONTAINER.md)) |
 
 To check the game logic after a change: `nix develop --command python3 src/test_logic.py`.
 Design notes and ideas: [DESIGN.md](DESIGN.md). Notes for AI coding assistants: [AGENTS.md](AGENTS.md).

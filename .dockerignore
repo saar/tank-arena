@@ -1,0 +1,12 @@
+# Keep the image small and clean: no git data, local models, runs or recordings.
+.git
+**/__pycache__
+**/*.pyc
+models/
+*.pt
+ml/runs/
+recordings/
+result
+result-*
+.vscode/
+.idea/
