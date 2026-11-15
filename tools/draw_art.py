@@ -842,27 +842,6 @@ def lives_icon():
         "........"])
 
 
-def stage_flag():
-    pal = {"p": "#b0b4c0", "f": "#e8b030", "d": "#a87010"}
-    return Canvas.from_rows(pal, [
-        "................",
-        "...p............",
-        "...pffffffff....",
-        "...pfffffffff...",
-        "...pffffdfffff..",
-        "...pfffddffff...",
-        "...pffffffff....",
-        "...pfffffff.....",
-        "...p............",
-        "...p............",
-        "...p............",
-        "...p............",
-        "...p............",
-        "..ppp...........",
-        ".ppppp..........",
-        "................"])
-
-
 def cursor():
     cv = tank_player(0, 0)
     cv.rot_cw()
@@ -918,7 +897,6 @@ def sprites():
     S["ui/font"] = font_sheet()
     S["ui/reserve_icon"] = reserve_icon()
     S["ui/lives_icon"] = lives_icon()
-    S["ui/stage_flag"] = stage_flag()
     S["ui/cursor"] = cursor()
     return S
 
