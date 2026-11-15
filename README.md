@@ -26,14 +26,25 @@ cd tank-arena
 nix develop --command python3 src/main.py
 ```
 
-**In a container** (Linux; with Nix, or with Podman or Docker installed):
+**With Docker or Podman** (Linux): no clone and no install, one command. It gets the ready
+image from the GitHub package registry and opens the game in a window, with sound:
 
 ```sh
-./container.sh pull       # one time: the ready image (or ./container.sh build)
-./container.sh play
+docker run --rm -it --init --user "$(id -u):$(id -g)" \
+  -v ~/.local/share/tank-arena:/data \
+  -e DISPLAY -e SDL_VIDEODRIVER=x11 -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+  -e XAUTHORITY=/tmp/.Xauthority -v "${XAUTHORITY:-$HOME/.Xauthority}":/tmp/.Xauthority:ro \
+  -e PULSE_SERVER=unix:/run/pulse/native -v "$XDG_RUNTIME_DIR/pulse/native":/run/pulse/native \
+  ghcr.io/saar/tank-arena:latest play
 ```
 
-The image also has the AI partner and the training tools. Guide: [docs/CONTAINER.md](docs/CONTAINER.md).
+With Podman, write `podman` for `docker` and `--userns=keep-id` for `--user "$(id -u):$(id -g)"`.
+Your maps, models, recordings and training runs stay in `~/.local/share/tank-arena`. Game options
+go after `play` (for example `play --ai-partner`). The image also has the AI partner and the
+training tools: `... ghcr.io/saar/tank-arena:latest train --run ml/runs/my-ai --hours 1`.
+
+In a clone of this repo, the script `container.sh` does the same with less to type
+(`./container.sh play`). Guide, all commands and problems: [docs/CONTAINER.md](docs/CONTAINER.md).
 
 **Without Nix:** install Python 3.11 or newer, then:
 
