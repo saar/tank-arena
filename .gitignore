@@ -12,3 +12,5 @@ models/
 # training runs and game recordings
 ml/runs/
 recordings/
+# browser build (tools/web_build.sh)
+build/

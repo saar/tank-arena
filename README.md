@@ -46,6 +46,14 @@ training tools: `... ghcr.io/saar/tank-arena:latest train --run ml/runs/my-ai --
 In a clone of this repo, the script `container.sh` does the same with less to type
 (`./container.sh play`). Guide, all commands and problems: [docs/CONTAINER.md](docs/CONTAINER.md).
 
+**In the browser** (test build, no install for the player): pygbag packs the game for the web.
+The AI partner runs there with numpy (`ml/npnet.py`), not torch.
+
+```sh
+nix develop --command sh tools/web_build.sh          # files in build/web-src/build/web/
+nix develop --command sh tools/web_build.sh --serve  # build and serve on http://localhost:8000
+```
+
 **Without Nix:** install Python 3.11 or newer, then:
 
 ```sh

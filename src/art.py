@@ -4,6 +4,7 @@ each SVG is used; a "grid" layer (a drawing help) is removed before loading.
 import io
 import os
 import re
+import sys
 
 import pygame
 
@@ -20,9 +21,8 @@ class MissingArt(Exception):
     pass
 
 
-def load_svg(art_dir, fid, soft=False):
-    """soft: keep real transparency (items: their fill is 70 % opaque). Else every
-    pixel is fully opaque or fully transparent (no soft edges)."""
+def render_svg(art_dir, fid):
+    """The "art" layer of art/<fid>.svg as a surface, 1 SVG unit = 1 pixel."""
     path = os.path.join(art_dir, fid + ".svg")
     if not os.path.exists(path):
         raise MissingArt(path)
@@ -31,12 +31,24 @@ def load_svg(art_dir, fid, soft=False):
     w, h = int(m.group(1)), int(m.group(2))
     txt = re.sub(r'<g[^>]*id="grid".*?</g>', "", txt, flags=re.S)
     txt = re.sub(r'<sodipodi:namedview.*?</sodipodi:namedview>', "", txt, flags=re.S)
-    # render 1 SVG unit = 1 pixel
     txt = re.sub(r'(<svg[^>]*?)\swidth="[^"]*"', r'\1 width="%d"' % w, txt, count=1)
     txt = re.sub(r'(<svg[^>]*?)\sheight="[^"]*"', r'\1 height="%d"' % h, txt, count=1)
-    surf = pygame.image.load(io.BytesIO(txt.encode()), "art.svg").convert_alpha()
+    surf = pygame.image.load(io.BytesIO(txt.encode()), "art.svg")
     if surf.get_size() != (w, h):
         surf = pygame.transform.scale(surf, (w, h))
+    return surf
+
+
+def load_svg(art_dir, fid, soft=False):
+    """soft: keep real transparency (items: their fill is 70 % opaque). Else every
+    pixel is fully opaque or fully transparent (no soft edges)."""
+    png = os.path.join(art_dir, fid + ".png")    # browser build: drawn before (tools/web/svg2png.py)
+    if sys.platform == "emscripten" and os.path.exists(png):
+        surf = pygame.image.load(png).convert_alpha()
+        w, h = surf.get_size()
+    else:
+        surf = render_svg(art_dir, fid).convert_alpha()
+        w, h = surf.get_size()
     if soft:
         return surf
     # hard pixel edges: no half-transparent pixels
