@@ -121,6 +121,15 @@ All points are at the top of `ml/env.py` (names that start with `R_`). The most 
 
 The points are added up in `TankEnv.step()` in `ml/env.py`. One step = 4 game frames.
 
+Here is what these moments look like in real games of the AI (green: reward, red: punishment):
+
+![Reward and punishment moments from real games of the AI](img/rewards.png)
+
+To make these pictures again (for example after a change of the points or the art):
+`nix develop --command python3 tools/doc_shots.py`. It needs the model in `models/partner.pt`.
+It plays games until it saw each moment once, and writes `docs/img/rewards.png` and
+`docs/img/screens.png`.
+
 **Good habits:**
 
 - Change one or two values at a time, then train and look (`--ai-watch`, `benchmark.py`).
