@@ -7,6 +7,10 @@ watch the AI play both tanks.
 Tank Arena is an original work, made from scratch: all code, pixel art, sounds, maps and
 enemy waves are new and belong to this project.
 
+**[Play it in your browser](https://saar.github.io/tank-arena/)**, no install.
+
+![The title screen, a 1-player game, and a game with the AI partner (blue tank)](docs/img/screens.png)
+
 - [Start the game](#start-the-game)
 - [How to play](#how-to-play)
 - [Play with the AI partner](#play-with-the-ai-partner)
@@ -218,7 +222,7 @@ The technical details are in [ml/README.md](ml/README.md).
 | `art/` | The art kit: one SVG file per sprite (see [art/README.md](art/README.md)) |
 | `maps/default/` | The built-in map pack |
 | `ml/` | The AI partner: game environment, network, training, tests |
-| `tools/` | `draw_art.py` (draws the sprites), `make_maps.py` (makes map packs), `replay.py` and `compose.py` (recordings to animations) |
+| `tools/` | `draw_art.py` (draws the sprites), `make_maps.py` (makes map packs), `replay.py` and `compose.py` (recordings to animations), `doc_shots.py` (the pictures in `docs/img/`), `web_build.sh` (browser version) |
 | `docs/` | Guides: map packs, AI training, container |
 | `container/`, `Dockerfile`, `container.sh` | The container image and its start script (see [docs/CONTAINER.md](docs/CONTAINER.md)) |
 
