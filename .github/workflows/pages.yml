@@ -1,0 +1,62 @@
+# Build the browser version (pygbag) and publish it on GitHub Pages:
+# https://<owner>.github.io/tank-arena/
+# Runs for each version tag (v1.2.3) and by hand (Actions tab > Web page > Run workflow).
+# The AI partner is the model in the Dockerfile (MODEL_URL), as numpy weights.
+name: Web page
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install the build tools
+        run: |
+          pip install pygame-ce==2.5.* pillow==12.* numpy==2.* pygbag==0.9.3
+          pip install torch==2.* --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Get the AI model
+        run: |
+          url="$(sed -n 's/^ARG MODEL_URL=//p' Dockerfile)"
+          mkdir -p models
+          curl -sfL "$url" -o models/partner.pt
+
+      - name: Build the page
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: sh tools/web_build.sh
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/web-src/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5

@@ -193,7 +193,8 @@ Each image is for `linux/amd64` (most PCs) and `linux/arm64` (Apple Silicon Macs
 and other ARM computers). Docker and Podman pick the right one by themselves.
 
 **Publish a new version** (maintainers). GitHub Actions builds and publishes the images
-(`.github/workflows/container.yml`) when you push a version tag:
+(`.github/workflows/container.yml`) and the online page <https://saar.github.io/tank-arena/>
+(`.github/workflows/pages.yml`) when you push a version tag:
 
 ```sh
 git tag v0.2.0
