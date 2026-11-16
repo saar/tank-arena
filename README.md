@@ -18,6 +18,9 @@ enemy waves are new and belong to this project.
 
 ## Start the game
 
+**Play online:** <https://saar.github.io/tank-arena/>. No install; it runs in your browser,
+with sound, gamepads and the AI partner. Click into the page once to start.
+
 **With Nix** (recommended: you get the same tools that we use):
 
 ```sh
@@ -58,8 +61,9 @@ In a clone of this repo, the script `container.sh` does the same with less to ty
 (`./container.sh` for the browser, `./container.sh play` for a window). Guide, all commands and
 problems: [docs/CONTAINER.md](docs/CONTAINER.md).
 
-**In the browser** (test build, no install for the player): pygbag packs the game for the web.
-The AI partner runs there with numpy (`ml/npnet.py`), not torch.
+**Build the browser version yourself:** pygbag packs the game for the web. The AI partner runs
+there with numpy (`ml/npnet.py`), not torch. The online page is the same build, published by
+`.github/workflows/pages.yml` for each version tag.
 
 ```sh
 nix develop --command sh tools/web_build.sh          # files in build/web-src/build/web/
