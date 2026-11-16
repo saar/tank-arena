@@ -189,6 +189,9 @@ The ready images are on the GitHub package registry: `ghcr.io/saar/tank-arena`.
 
 `./container.sh pull TAG` gets one of them (default `latest`).
 
+Each image is for `linux/amd64` (most PCs) and `linux/arm64` (Apple Silicon Macs, Raspberry Pi
+and other ARM computers). Docker and Podman pick the right one by themselves.
+
 **Publish a new version** (maintainers). GitHub Actions builds and publishes the images
 (`.github/workflows/container.yml`) when you push a version tag:
 
@@ -197,7 +200,7 @@ git tag v0.2.0
 git push origin v0.2.0
 ```
 
-The build takes about 10 minutes; see the **Actions** tab. To build without a new tag: Actions,
+The build takes about 30 minutes (the ARM part runs in emulation); see the **Actions** tab. To build without a new tag: Actions,
 **Container image**, **Run workflow** (this gives the `latest` and `sha-...` tags).
 
 The package is linked to this public repository, so it is public too: anyone can pull it

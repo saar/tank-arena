@@ -5,6 +5,8 @@
 # Images:
 #   ghcr.io/<owner>/tank-arena:latest, :1.2.3, :1.2, :sha-abc1234        with the AI partner
 #   ghcr.io/<owner>/tank-arena:latest-noai, :1.2.3-noai, ...            game only (small)
+# Each tag has two platforms: linux/amd64 (PCs) and linux/arm64 (Apple Silicon, Raspberry Pi).
+# arm64 is built with QEMU emulation, so it is slower.
 name: Container image
 
 on:
@@ -30,6 +32,8 @@ jobs:
             suffix: "-noai"
     steps:
       - uses: actions/checkout@v7
+
+      - uses: docker/setup-qemu-action@v4
 
       - uses: docker/setup-buildx-action@v4
 
@@ -60,6 +64,7 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
