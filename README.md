@@ -26,8 +26,19 @@ cd tank-arena
 nix develop --command python3 src/main.py
 ```
 
-**With Docker or Podman** (Linux): no clone and no install, one command. It gets the ready
-image from the GitHub package registry and opens the game in a window, with sound:
+**With Docker or Podman** (Linux, macOS, Windows): no clone and no install, one command. It
+gets the ready image from the GitHub package registry and serves the game to your browser:
+
+```sh
+docker run --rm -it --init -p 127.0.0.1:8000:8000 ghcr.io/saar/tank-arena:latest
+```
+
+Then open <http://localhost:8000>. Ctrl+C in the terminal stops it. The browser version has
+sound, gamepads and the AI partner. The page loads its Python runtime from the pygbag web
+site, so the browser needs the internet.
+
+**In a window** (Linux only, X11 and PulseAudio/PipeWire): add the `play` command and the
+display options. Saved data (map packs, recordings) works only in this mode:
 
 ```sh
 docker run --rm -it --init --user "$(id -u):$(id -g)" \
@@ -44,7 +55,8 @@ go after `play` (for example `play --ai-partner`). The image also has the AI par
 training tools: `... ghcr.io/saar/tank-arena:latest train --run ml/runs/my-ai --hours 1`.
 
 In a clone of this repo, the script `container.sh` does the same with less to type
-(`./container.sh play`). Guide, all commands and problems: [docs/CONTAINER.md](docs/CONTAINER.md).
+(`./container.sh` for the browser, `./container.sh play` for a window). Guide, all commands and
+problems: [docs/CONTAINER.md](docs/CONTAINER.md).
 
 **In the browser** (test build, no install for the player): pygbag packs the game for the web.
 The AI partner runs there with numpy (`ml/npnet.py`), not torch.

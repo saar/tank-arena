@@ -1,5 +1,6 @@
 # Tank Arena in a container (Docker or Podman).
-# Human guide: docs/CONTAINER.md. Easy start: ./container.sh build && ./container.sh play
+# Human guide: docs/CONTAINER.md. Easy start: docker run --rm -p 127.0.0.1:8000:8000 IMAGE,
+# then open http://localhost:8000 (the browser version; `play` opens a window on Linux).
 #
 # Build options (--build-arg NAME=VALUE):
 #   WITH_AI=1      1: add PyTorch (AI partner, training). 0: game only, much smaller image.
@@ -34,6 +35,16 @@ RUN mkdir -p /app/models \
       python3 -c "import sys, urllib.request; urllib.request.urlretrieve(sys.argv[1], '/app/models/partner.pt')" "$MODEL_URL" ; \
     fi
 
+# The browser version (pygbag), served by the `web` command (the default). pygbag is only
+# needed for the build, so it is removed in the same step. The browser loads its Python
+# runtime from the pygbag CDN; the AI partner is in it only when the image has the model.
+ARG PYGBAG_VERSION=0.9.3
+RUN pip install --no-cache-dir pygbag==${PYGBAG_VERSION} \
+ && SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy sh tools/web_build.sh \
+ && mv build/web-src/build/web /app/web \
+ && rm -rf build /root/.cache \
+ && pip uninstall -y pygbag
+
 # All data that must stay after the container stops goes to /data (mount a host folder there):
 #   /data/maps, /data/settings.json   installed map packs, chosen pack
 #   /data/models                      your own models (use: --ai-partner /data/models/NAME.pt)
@@ -56,5 +67,6 @@ ENV TANK_ARENA_HOME=/data \
     PYTHONUNBUFFERED=1
 
 VOLUME /data
+EXPOSE 8000
 ENTRYPOINT ["/app/container/entrypoint.sh"]
-CMD ["play"]
+CMD ["web"]
