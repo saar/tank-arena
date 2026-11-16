@@ -13,10 +13,16 @@ if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then
     export SDL_AUDIODRIVER="${SDL_AUDIODRIVER:-dummy}"
 fi
 
-cmd="${1:-play}"
+cmd="${1:-web}"
 [ $# -gt 0 ] && shift
 
 case "$cmd" in
+    web)       # The browser version. The server listens on all addresses inside the container;
+               # publish the port with -p 127.0.0.1:8000:8000 so only your computer reaches it.
+               port="${TA_WEB_PORT:-8000}"
+               [ -f /app/web/index.html ] || { echo "No browser build in this image." >&2; exit 1; }
+               echo "Tank Arena in the browser: open http://localhost:${TA_HOST_PORT:-$port}  (Ctrl+C stops)"
+               exec python3 -m http.server "$port" --bind 0.0.0.0 --directory /app/web ;;
     play)      exec python3 src/main.py "$@" ;;
     replay)    exec python3 tools/replay.py "$@" ;;
     train)     exec python3 ml/train.py "$@" ;;
@@ -31,7 +37,9 @@ case "$cmd" in
         cat <<'EOF'
 Tank Arena container. Usage: <command> [options]
 
-  play [options]       the game (default). Options: python3 src/main.py --help
+  web                  the game in your browser (default): open http://localhost:8000
+                       (run the image with -p 127.0.0.1:8000:8000)
+  play [options]       the game in a window (Linux, X11). Options: python3 src/main.py --help
   replay FILE [...]    play a recording again, or make a WebP/GIF
   train [options]      train an AI   (ml/train.py --run ml/runs/NAME --hours H)
   evaluate MODEL       measure a model

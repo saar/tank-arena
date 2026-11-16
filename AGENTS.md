@@ -38,8 +38,8 @@ nix develop --command python3 ml/benchmark.py MODEL [MODEL2 ...]          # fixe
 nix develop --command python3 ml/compare.py MODEL|RUN_DIR ... --stage N [--format webp --grid]
 ```
 
-Container (Docker/Podman): `./container.sh build`, then `./container.sh play|train|test ...`; guide
-`docs/CONTAINER.md`. `Dockerfile` copies the repo, `container/entrypoint.sh` maps the first word to a
+Container (Docker/Podman): `./container.sh build`, then `./container.sh [web]|play|train|test ...` (`web`, the default, serves the browser build on port 8000); guide
+`docs/CONTAINER.md`. `Dockerfile` copies the repo and builds the browser version into `/app/web`, `container/entrypoint.sh` maps the first word to a
 program, all saved data goes to `/data`. Keep the container docs in sync when you add CLI options
 or saved files.
 

@@ -6,7 +6,8 @@
 #                                     latest-noai, ...)
 #   ./container.sh build              make the image yourself (with the AI partner)
 #   ./container.sh build --no-ai      make a small image without the AI
-#   ./container.sh play [options]     play in a window, with sound
+#   ./container.sh                    play in your browser: open http://localhost:8000
+#   ./container.sh play [options]     play in a window, with sound (Linux)
 #   ./container.sh train --run ml/runs/my-ai --hours 1
 #   ./container.sh help               all commands
 #
@@ -22,6 +23,7 @@
 #   TA_RUNS        host folder for training runs         (default: $TA_DATA/runs)
 #   TA_GAMEPAD=1   give the container access to gamepads (/dev/input)
 #   TA_WINDOW=0|1  force no window / a window (default: a window for play, replay, shell)
+#   TA_PORT        host port for the browser version (default: 8000)
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -35,7 +37,7 @@ else engine=docker; fi
 image="${TA_IMAGE:-tank-arena}"
 data="${TA_DATA:-${XDG_DATA_HOME:-$HOME/.local/share}/tank-arena}"
 
-cmd="${1:-play}"
+cmd="${1:-web}"
 [[ $# -gt 0 ]] && shift
 
 # ---- build -----------------------------------------------------------------
@@ -91,6 +93,12 @@ fi
 
 # Keyboard and Ctrl+C work when the command runs in a terminal.
 [[ -t 0 && -t 1 ]] && opts+=(-it)
+
+# The browser version: only this computer can open the page (127.0.0.1).
+if [[ "$cmd" == web ]]; then
+    port="${TA_PORT:-8000}"
+    opts+=(-p "127.0.0.1:$port:8000" -e "TA_HOST_PORT=$port")
+fi
 
 # Window and sound.
 case "$cmd" in play|replay|shell) window=1 ;; *) window=0 ;; esac

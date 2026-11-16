@@ -3,9 +3,19 @@
 With a container, you do not install Python or any packages on your computer. The image has
 the game, the default map pack, the trained AI partner and the training tools.
 
-This guide is for **Linux**. On macOS and Windows, the container cannot easily open a window:
-use the normal install from the [README](../README.md#start-the-game) to play there. Training
-and benchmarks without a window work on all systems.
+**By default the container serves the browser version** of the game: open
+<http://localhost:8000>. This works on Linux, macOS and Windows (Docker Desktop or Podman
+Desktop). The `play` command opens the game in a **window** instead; this works on **Linux**
+only (X11). Training and benchmarks without a window work on all systems.
+
+Browser or window?
+
+| | Browser (default, `web`) | Window (`play`) |
+|---|---|---|
+| Systems | Linux, macOS, Windows | Linux with X11 or XWayland |
+| Sound, gamepads, AI partner | yes | yes (gamepads: `TA_GAMEPAD=1`) |
+| Map packs from the data folder, `--record`, game options | no: the default pack, options on the title screen | yes |
+| Internet | the page loads its Python runtime from the pygbag web site | no |
 
 - [Quick start](#quick-start)
 - [What you can do](#what-you-can-do)
@@ -28,7 +38,14 @@ Then, in the repository folder:
 
 ```sh
 ./container.sh pull       # one time; gets the ready image (about 2 GB)
-./container.sh play       # play in a window, with sound
+./container.sh            # play in your browser: open http://localhost:8000
+./container.sh play       # or: play in a window, with sound (Linux)
+```
+
+Without the script (also on macOS and Windows):
+
+```sh
+docker run --rm -it --init -p 127.0.0.1:8000:8000 ghcr.io/saar/tank-arena:latest
 ```
 
 Or make the image yourself from the code in your folder (a few minutes):
@@ -37,8 +54,12 @@ Or make the image yourself from the code in your folder (a few minutes):
 ./container.sh build
 ```
 
-Keys and game options are the same as in the [README](../README.md#how-to-play). Close the
-window, press Esc on the title screen, or press Ctrl+C in the terminal to stop.
+Keys and game options are the same as in the [README](../README.md#how-to-play). In the
+browser, press Ctrl+C in the terminal to stop the server. In a window, close the window, press
+Esc on the title screen, or press Ctrl+C in the terminal.
+
+`127.0.0.1` in `-p 127.0.0.1:8000:8000` means: only your computer can open the page. Another
+port: `-p 127.0.0.1:9000:8000` (with the script: `TA_PORT=9000 ./container.sh`).
 
 Podman runs without root. It needs user ID ranges for your user in `/etc/subuid` and
 `/etc/subgid` (most Linux systems add them when they make a user; check with
@@ -59,7 +80,8 @@ After you change the code, run `./container.sh build` again. The code is copied 
 
 | Command | What it does | Example |
 |---|---|---|
-| `play` | The game (default command) | `./container.sh play --players 2 --stage 5` |
+| `web` | The game in your browser (default command) | `./container.sh` |
+| `play` | The game in a window (Linux) | `./container.sh play --players 2 --stage 5` |
 | `play --ai-partner` | Play with the AI partner | `./container.sh play --ai-partner` |
 | `play --ai-watch` | Watch the AI play | `./container.sh play --ai-watch --speed 4 --record` |
 | `replay FILE` | Play a recording again, or make an animation | `./container.sh replay /data/recordings/FILE.rec.json.gz` |
@@ -139,6 +161,7 @@ Set these environment variables before the command, for example
 | `TA_ENGINE` | `podman` or `docker`. When set, the script does not use `nix develop` | Podman from Nix if Nix is installed, else the installed `podman`, else `docker` |
 | `TA_IMAGE` | The image name | `tank-arena` |
 | `TA_WINDOW` | `1`: always open a window; `0`: never | window for `play`, `replay`, `shell` |
+| `TA_PORT` | The port on your computer for the browser version | `8000` |
 
 Example: keep the training runs on a big disk:
 
@@ -193,6 +216,9 @@ You do not need the script or a clone of the repo. The script only adds the righ
 the image from ghcr.io by themselves at the first run.
 
 ```sh
+# The browser version (default command): open http://localhost:8000
+docker run --rm -it --init -p 127.0.0.1:8000:8000 ghcr.io/saar/tank-arena:latest
+
 # Training or tests (no window)
 docker run --rm -it --init --user "$(id -u):$(id -g)" \
     -v ~/.local/share/tank-arena:/data \
@@ -219,6 +245,7 @@ With Podman, write `podman` for `docker` and `--userns=keep-id` for `--user ...`
 | `--init`, `-it` | Ctrl+C in the terminal stops the game |
 | `DISPLAY`, `XAUTHORITY`, `/tmp/.X11-unix` | The window |
 | `PULSE_SERVER` and the `pulse/native` socket | Sound (leave out, and add `--mute` after `play`, for no sound) |
+| `-p 127.0.0.1:8000:8000` | The browser version: the page on port 8000, for this computer only |
 | `:latest` / `:latest-noai` | With the AI partner / small image without it |
 
 To use an image that you built yourself (`docker build -t tank-arena .`), write `tank-arena`
@@ -231,6 +258,9 @@ Any other first word runs as a program, for example `ghcr.io/saar/tank-arena:lat
 
 | Problem | What to do |
 |---|---|
+| The browser shows nothing at `localhost:8000` | Did you add `-p 127.0.0.1:8000:8000`? Is port 8000 free? Use another port: `-p 127.0.0.1:9000:8000`, then open `localhost:9000`. |
+| The page stays black or loads forever | The browser needs the internet: the page loads its Python runtime from `pygame-web.github.io`. Click into the page once (browsers start sound only after a click). |
+| No AI partner in the browser | The small image (`-noai`) has no model. Use `:latest`. |
 | `No DISPLAY: cannot open a window` | You are not in a desktop session (for example over SSH). Use commands without a window (`train`, `test`, `benchmark`). |
 | The window does not open, `Authorization required` | Your desktop does not let the container use the display. Run `xhost +SI:localuser:$(whoami)` one time, then try again. |
 | No sound | The script needs the PulseAudio or PipeWire socket (`$XDG_RUNTIME_DIR/pulse/native`). It tells you when it does not find it. Play with `--mute` to hide the message. |
